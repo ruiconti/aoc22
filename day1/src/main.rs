@@ -10,7 +10,11 @@ fn main() {
 
     elf_calories.sort_by(|a, b| b.cmp(a));
     let top_three = elf_calories.into_iter().take(3).collect::<Vec<_>>();
-    println!("Top 3 most-economic elves: {:?}.\nTotal calories collected: {}", &top_three, top_three.iter().sum::<i32>());
+    println!(
+        "Top 3 most-economic elves: {:?}.\nTotal calories collected: {}",
+        &top_three,
+        top_three.iter().sum::<i32>()
+    );
 }
 
 fn extract_calories_per_elf(calories_notes: &str) -> Vec<i32> {
@@ -23,7 +27,9 @@ fn extract_calories_per_elf(calories_notes: &str) -> Vec<i32> {
             elf_calories.push(elf_calorie);
             elf_calorie = 0;
         } else {
-            elf_calorie += sanitized_line.parse::<i32>().expect(format!("Unable to parse line into i32 {}", line).as_str());
+            elf_calorie += sanitized_line
+                .parse::<i32>()
+                .expect(format!("Unable to parse line into i32 {}", line).as_str());
         }
     }
 
@@ -74,5 +80,3 @@ mod test_extract_calories_per_elf {
         assert_eq!(elf_calories, vec![1265, 350, 300, 500, 330]);
     }
 }
-
-

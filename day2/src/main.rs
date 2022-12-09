@@ -2,7 +2,8 @@ use std::fs::read_to_string;
 fn main() {
     let input_filepath = "./input/strategy_guide.txt";
     // reads the input string into the game
-    let rounds_raw = read_to_string(input_filepath).expect(format!("Unable to read {}", input_filepath).as_str());
+    let rounds_raw = read_to_string(input_filepath)
+        .expect(format!("Unable to read {}", input_filepath).as_str());
 
     for part in vec![Problem::Part1, Problem::Part2] {
         let game = RockPaperScissors::new(rounds_raw.as_str(), part);
@@ -14,7 +15,7 @@ fn main() {
 
 // The game is rock, paper, scissors. It is always played by 2 fighting hands and 2 fighting hands only.
 // Each round can only have one winning hand. And to tell the winner, we need to compare both hands.
-// 
+//
 // Note: Hand and outcome scores _are not_ dependent. For example, by choosing scissors you are _guaranteed_ to earn 3 points.
 //
 // **Gameplay**:
@@ -32,11 +33,11 @@ fn main() {
 // - Rock: A
 // - Paper: B
 // - Scissors: C
-// 
+//
 // So a round example will be in the form of:
 // A Y
-// 
-// Meaning that the opponent chose rock (A) and myself paper (Y). 
+//
+// Meaning that the opponent chose rock (A) and myself paper (Y).
 // Round winner: myself.
 // Round scores:
 //  Opponent: 0 + 1 = 1
@@ -45,7 +46,7 @@ fn main() {
 #[derive(Debug, Clone, Copy)]
 enum Problem {
     Part1,
-    Part2
+    Part2,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -55,12 +56,11 @@ enum Hand {
     Scissors = 3,
 }
 
-#[derive(Debug)]
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 enum Outcome {
     MyselfWins,
     OpponentWins,
-    Draw
+    Draw,
 }
 
 #[derive(Debug)]
@@ -73,7 +73,7 @@ struct RoundSetup {
 struct RoundOutcome {
     winner: Outcome,
     score_opponent: i32,
-    score_myself: i32
+    score_myself: i32,
 }
 
 struct RockPaperScissors {
@@ -115,7 +115,7 @@ impl Game for RockPaperScissors {
         let mut rounds_setup = Vec::new();
         for line in rounds.lines() {
             let sanitized_line = line.trim();
-            if sanitized_line.is_empty() {
+            if line.trim().is_empty() {
                 continue;
             }
 
@@ -125,7 +125,11 @@ impl Game for RockPaperScissors {
     }
 
     fn run(&self) -> RoundOutcome {
-        let mut game_outcome = RoundOutcome { winner: Outcome::Draw, score_opponent: 0, score_myself: 0 };
+        let mut game_outcome = RoundOutcome {
+            winner: Outcome::Draw,
+            score_opponent: 0,
+            score_myself: 0,
+        };
         for round in &self.rounds_setup {
             let round_outcome = round.play();
             game_outcome.score_opponent += round_outcome.score_opponent;
@@ -141,7 +145,6 @@ impl Game for RockPaperScissors {
         };
         return game_outcome;
     }
-
 }
 
 impl RoundSetup {
@@ -151,20 +154,19 @@ impl RoundSetup {
             Some("A") => Hand::Rock,
             Some("B") => Hand::Paper,
             Some("C") => Hand::Scissors,
-            _ => panic!("Invalid opponent hand")
+            _ => panic!("Invalid opponent hand"),
         };
 
-        // The way that we handle the second column i.e. `myself` differs 
+        // The way that we handle the second column i.e. `myself` differs
         // depending on which part of the problem we're at.
         let myself = match problem {
             // First part: we inferred that X, Y and Z were mappings to hands.
-            Problem::Part1 => 
-                match words.next() {
-                    Some("X") => Hand::Rock,
-                    Some("Y") => Hand::Paper,
-                    Some("Z") => Hand::Scissors,
-                    _ => panic!("Invalid myself hand")
-                },
+            Problem::Part1 => match words.next() {
+                Some("X") => Hand::Rock,
+                Some("Y") => Hand::Paper,
+                Some("Z") => Hand::Scissors,
+                _ => panic!("Invalid myself hand"),
+            },
             // Second part: we know that X, Y and Z are mappings to outcomes that
             // depends on the opponent's hand.
             Problem::Part2 => match words.next() {
@@ -192,7 +194,10 @@ impl RoundSetup {
                     _ => panic!("Invalid word.")
             },
         };
-        Self { opponent: opponent, myself: myself }
+        Self {
+            opponent: opponent,
+            myself: myself,
+        }
     }
 
     fn play(&self) -> RoundOutcome {
@@ -200,11 +205,11 @@ impl RoundSetup {
             Some(std::cmp::Ordering::Equal) => Outcome::Draw,
             Some(std::cmp::Ordering::Greater) => Outcome::OpponentWins,
             Some(std::cmp::Ordering::Less) => Outcome::MyselfWins,
-            None => panic!("Invalid round")
+            None => panic!("Invalid round"),
         };
 
         let score_opponent = match winner {
-            Outcome::OpponentWins => self.opponent as i32  + 6,
+            Outcome::OpponentWins => self.opponent as i32 + 6,
             Outcome::Draw => self.opponent as i32 + 3,
             Outcome::MyselfWins => self.opponent as i32,
         };
@@ -215,7 +220,11 @@ impl RoundSetup {
             Outcome::OpponentWins => self.myself as i32,
         };
 
-        return RoundOutcome { winner, score_opponent, score_myself };
+        return RoundOutcome {
+            winner,
+            score_opponent,
+            score_myself,
+        };
     }
 }
 
@@ -224,7 +233,7 @@ impl RoundSetup {
 // Win:  6 points
 // Draw: 3 points
 // Loss: 0 points
-// 
+//
 // Hand score:
 // Rock:     1 point
 // Paper:    2 points
@@ -301,9 +310,7 @@ mod test_game {
         assert_eq!(outcome.score_myself, 1 + 5 + 6);
         assert_eq!(outcome.score_opponent, 8 + 5 + 6);
     }
-
 }
-
 
 #[cfg(test)]
 mod test_round_setup {
@@ -313,26 +320,89 @@ mod test_round_setup {
     fn test_round_setup_match() {
         // Arrange
         let round_setups = vec![
-            RoundSetup{ opponent: Hand::Rock, myself: Hand::Rock },
-            RoundSetup{ opponent: Hand::Rock, myself: Hand::Paper },
-            RoundSetup{ opponent: Hand::Rock, myself: Hand::Scissors },
-            RoundSetup{ opponent: Hand::Paper, myself: Hand::Rock },
-            RoundSetup{ opponent: Hand::Paper, myself: Hand::Paper },
-            RoundSetup{ opponent: Hand::Paper, myself: Hand::Scissors },
-            RoundSetup{ opponent: Hand::Scissors, myself: Hand::Rock },
-            RoundSetup{ opponent: Hand::Scissors, myself: Hand::Paper },
-            RoundSetup{ opponent: Hand::Scissors, myself: Hand::Scissors },
+            RoundSetup {
+                opponent: Hand::Rock,
+                myself: Hand::Rock,
+            },
+            RoundSetup {
+                opponent: Hand::Rock,
+                myself: Hand::Paper,
+            },
+            RoundSetup {
+                opponent: Hand::Rock,
+                myself: Hand::Scissors,
+            },
+            RoundSetup {
+                opponent: Hand::Paper,
+                myself: Hand::Rock,
+            },
+            RoundSetup {
+                opponent: Hand::Paper,
+                myself: Hand::Paper,
+            },
+            RoundSetup {
+                opponent: Hand::Paper,
+                myself: Hand::Scissors,
+            },
+            RoundSetup {
+                opponent: Hand::Scissors,
+                myself: Hand::Rock,
+            },
+            RoundSetup {
+                opponent: Hand::Scissors,
+                myself: Hand::Paper,
+            },
+            RoundSetup {
+                opponent: Hand::Scissors,
+                myself: Hand::Scissors,
+            },
         ];
         let expected_outcomes = vec![
-            RoundOutcome{ winner: Outcome::Draw, score_opponent: 4, score_myself: 4},
-            RoundOutcome{ winner: Outcome::MyselfWins, score_opponent: 1, score_myself: 8},
-            RoundOutcome{ winner: Outcome::OpponentWins, score_opponent: 7, score_myself: 3},
-            RoundOutcome{ winner: Outcome::OpponentWins, score_opponent: 8, score_myself: 1},
-            RoundOutcome{ winner: Outcome::Draw, score_opponent: 5, score_myself: 5},
-            RoundOutcome{ winner: Outcome::MyselfWins, score_opponent: 2, score_myself: 9},
-            RoundOutcome{ winner: Outcome::MyselfWins, score_opponent: 3, score_myself: 7},
-            RoundOutcome{ winner: Outcome::OpponentWins, score_opponent: 9, score_myself: 2},
-            RoundOutcome{ winner: Outcome::Draw, score_opponent: 6, score_myself: 6},
+            RoundOutcome {
+                winner: Outcome::Draw,
+                score_opponent: 4,
+                score_myself: 4,
+            },
+            RoundOutcome {
+                winner: Outcome::MyselfWins,
+                score_opponent: 1,
+                score_myself: 8,
+            },
+            RoundOutcome {
+                winner: Outcome::OpponentWins,
+                score_opponent: 7,
+                score_myself: 3,
+            },
+            RoundOutcome {
+                winner: Outcome::OpponentWins,
+                score_opponent: 8,
+                score_myself: 1,
+            },
+            RoundOutcome {
+                winner: Outcome::Draw,
+                score_opponent: 5,
+                score_myself: 5,
+            },
+            RoundOutcome {
+                winner: Outcome::MyselfWins,
+                score_opponent: 2,
+                score_myself: 9,
+            },
+            RoundOutcome {
+                winner: Outcome::MyselfWins,
+                score_opponent: 3,
+                score_myself: 7,
+            },
+            RoundOutcome {
+                winner: Outcome::OpponentWins,
+                score_opponent: 9,
+                score_myself: 2,
+            },
+            RoundOutcome {
+                winner: Outcome::Draw,
+                score_opponent: 6,
+                score_myself: 6,
+            },
         ];
 
         for (setup, expected) in round_setups.iter().zip(expected_outcomes.iter()) {
@@ -340,9 +410,21 @@ mod test_round_setup {
             let round_outcome = setup.play();
 
             // Assert
-            assert_eq!(round_outcome.winner, expected.winner, "Unexpected winner outcome.\nSetup: {:?}\nExpected: {:?}, Actual: {:?}\n", setup, expected.winner, round_outcome.winner);
-            assert_eq!(round_outcome.score_opponent, expected.score_opponent, "Unexpected score_opponent.\nSetup: {:?}\nExpected: {:?}, Actual: {:?}\n", setup, expected.score_opponent, round_outcome.score_opponent);
-            assert_eq!(round_outcome.score_myself, expected.score_myself, "Unexpected score_myself.\nSetup: {:?}\nExpected: {:?}, Actual: {:?}\n", setup, expected.score_myself, round_outcome.score_myself);
+            assert_eq!(
+                round_outcome.winner, expected.winner,
+                "Unexpected winner outcome.\nSetup: {:?}\nExpected: {:?}, Actual: {:?}\n",
+                setup, expected.winner, round_outcome.winner
+            );
+            assert_eq!(
+                round_outcome.score_opponent, expected.score_opponent,
+                "Unexpected score_opponent.\nSetup: {:?}\nExpected: {:?}, Actual: {:?}\n",
+                setup, expected.score_opponent, round_outcome.score_opponent
+            );
+            assert_eq!(
+                round_outcome.score_myself, expected.score_myself,
+                "Unexpected score_myself.\nSetup: {:?}\nExpected: {:?}, Actual: {:?}\n",
+                setup, expected.score_myself, round_outcome.score_myself
+            );
         }
         // Act
     }
@@ -350,17 +432,46 @@ mod test_round_setup {
     #[test]
     fn test_simple_line_parsing() {
         // Arrange
-        let rounds = vec!["A X", "A Y", "A Z", "B X", "B Y", "B Z", "C X", "C Y", "C Z"];
+        let rounds = vec![
+            "A X", "A Y", "A Z", "B X", "B Y", "B Z", "C X", "C Y", "C Z",
+        ];
         let expected_setups = vec![
-            RoundSetup{ opponent: Hand::Rock, myself: Hand::Rock },
-            RoundSetup{ opponent: Hand::Rock, myself: Hand::Paper },
-            RoundSetup{ opponent: Hand::Rock, myself: Hand::Scissors },
-            RoundSetup{ opponent: Hand::Paper, myself: Hand::Rock },
-            RoundSetup{ opponent: Hand::Paper, myself: Hand::Paper },
-            RoundSetup{ opponent: Hand::Paper, myself: Hand::Scissors },
-            RoundSetup{ opponent: Hand::Scissors, myself: Hand::Rock },
-            RoundSetup{ opponent: Hand::Scissors, myself: Hand::Paper },
-            RoundSetup{ opponent: Hand::Scissors, myself: Hand::Scissors },
+            RoundSetup {
+                opponent: Hand::Rock,
+                myself: Hand::Rock,
+            },
+            RoundSetup {
+                opponent: Hand::Rock,
+                myself: Hand::Paper,
+            },
+            RoundSetup {
+                opponent: Hand::Rock,
+                myself: Hand::Scissors,
+            },
+            RoundSetup {
+                opponent: Hand::Paper,
+                myself: Hand::Rock,
+            },
+            RoundSetup {
+                opponent: Hand::Paper,
+                myself: Hand::Paper,
+            },
+            RoundSetup {
+                opponent: Hand::Paper,
+                myself: Hand::Scissors,
+            },
+            RoundSetup {
+                opponent: Hand::Scissors,
+                myself: Hand::Rock,
+            },
+            RoundSetup {
+                opponent: Hand::Scissors,
+                myself: Hand::Paper,
+            },
+            RoundSetup {
+                opponent: Hand::Scissors,
+                myself: Hand::Scissors,
+            },
         ];
 
         for (round, expected) in rounds.iter().zip(expected_setups.iter()) {
@@ -373,4 +484,3 @@ mod test_round_setup {
         }
     }
 }
-
